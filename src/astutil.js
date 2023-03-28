@@ -128,9 +128,36 @@ function init(root) {
                 } else {
                     console.log("WARNING: unexpected key type of 'Property'.");
                 }
-            } else
-                console.log("WARNING: Computed property for method definition, not yet supported.");
-        }
+            } else{
+                if(parent.key){
+                    if(parent.key.left &&parent.key.right){
+                        nd.id = {
+                            type: 'Identifier',
+                            name: parent.key.left.value + parent.key.right.value,
+                            range: parent.key.range,
+                            loc: parent.key.loc
+                        };
+                    }
+                    else if(parent.key.value){
+                        nd.id = {
+                            type: 'Identifier',
+                            name: parent.key.value,
+                            range: parent.key.range,
+                            loc: parent.key.loc
+                        };
+                    }
+                    else if(parent.key.name){
+                        nd.id = {
+                            type: 'Identifier',
+                            name: parent.key.name,
+                            range: parent.key.range,
+                            loc: parent.key.loc
+                        };
+                    }
+                    else
+                        console.log("WARNING: Computed property for method definition, not yet supported.");
+            }
+        }}
 
         if (nd.type === 'FunctionDeclaration' ||
             nd.type === 'FunctionExpression' ||
@@ -170,7 +197,7 @@ function init(root) {
                 static: boolean;
             }
         */
-        if (nd.type === 'MethodDefinition')
+        if (nd.type === 'MethodDefinition'){
             if (!nd.computed) {
                 if (nd.key.type === 'Identifier') {
                     nd.value.id = nd.key;
@@ -183,7 +210,7 @@ function init(root) {
             } else {
                 console.log("WARNING: Computed property for method definition, not yet supported.");
             }
-
+        }
         if (nd.type === 'CallExpression' || nd.type === 'NewExpression')
             root.attr.calls.push(nd);
     });
@@ -572,7 +599,8 @@ Returns:
 function isFunction(nd) {
     return nd.type === 'FunctionDeclaration' ||
         nd.type === 'FunctionExpression' ||
-        nd.type === 'ArrowFunctionExpression'
+        nd.type === 'ArrowFunctionExpression'||
+        nd.type === 'TSEmptyBodyFunctionExpression'
 }
 
 module.exports.visit = visit;

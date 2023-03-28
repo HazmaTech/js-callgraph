@@ -245,7 +245,7 @@ const propVertices = new symtab.Symtab();
 // retrieve property vertex from cache, or create new one
 function propVertex(nd) {
     let p;
-    if (nd.type === 'Identifier') {
+    if (nd.type === 'Identifier' || nd.type === 'PrivateIdentifier') {
         p = nd.name;
     } else if (nd.type === 'Literal') {
         // this case handles array, property field: 0, 1, 2...
@@ -272,7 +272,7 @@ let globVertices = new symtab.Symtab();
 // similar to propVertex, globVertex doesn't have an associated ast node
 function globVertex(nd) {
     let gp;
-    if (nd.type === 'Identifier') {
+    if (nd.type === 'Identifier' || nd.type === 'PrivateIdentifier') {
         gp = nd.name;
     } else if (nd.type === 'Literal') {
         // this case handles array, property field: 0, 1, 2...
