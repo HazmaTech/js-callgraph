@@ -108,7 +108,8 @@ function addIntraproceduralFlowGraphEdges(ast, flow_graph) {
                     nd.properties.forEach(function (prop) {
                         if (prop.kind === 'init') {
                             // Temporary fix for computed property names
-                            if (prop.key.type === 'Identifier' || prop.key.type === 'Literal') {
+
+                            if (astutil.isIdentifier(prop.key.type) || prop.key.type === 'Literal') {
                                 flow_graph.addEdge(vertexFor(prop.value), propVertex(prop.key));
                             }
                         }
@@ -133,7 +134,8 @@ function addIntraproceduralFlowGraphEdges(ast, flow_graph) {
                 case 'VariableDeclarator':
                     // Only handle the case that nd.id is an Identifier
                     // ObjectPattern and ArrayPattern are handled separately
-                    if (nd.id.type === 'Identifier' && nd.init) {
+
+                    if (astutil.isIdentifier(nd.id.type) && nd.init) {
                         flow_graph.addEdge(vertexFor(nd.init), vertexFor(nd.id));
                     }
                     break;
@@ -160,7 +162,7 @@ function addIntraproceduralFlowGraphEdges(ast, flow_graph) {
                     break;
 
                 case 'MethodDefinition':
-                    if (nd.key.type === 'Identifier') {
+                    if (astutil.isIdentifier(nd.key.type)) {
                         flow_graph.addEdge(funcVertex(nd.value), propVertex(nd.key));
                     }
                     break;
@@ -223,7 +225,7 @@ function vertexFor(nd) {
 
 // variable vertices are cached at the variable declarations
 function varVertex(nd) {
-    if (nd.type !== 'Identifier') {
+    if (!astutil.isIdentifier(nd.type)) {
         throw new Error("invalid variable vertex");
     }
 
@@ -245,7 +247,7 @@ const propVertices = new symtab.Symtab();
 // retrieve property vertex from cache, or create new one
 function propVertex(nd) {
     let p;
-    if (nd.type === 'Identifier' || nd.type === 'PrivateIdentifier') {
+    if (astutil.isIdentifier(nd.type)) {
         p = nd.name;
     } else if (nd.type === 'Literal') {
         // this case handles array, property field: 0, 1, 2...
@@ -272,7 +274,7 @@ let globVertices = new symtab.Symtab();
 // similar to propVertex, globVertex doesn't have an associated ast node
 function globVertex(nd) {
     let gp;
-    if (nd.type === 'Identifier' || nd.type === 'PrivateIdentifier') {
+    if (astutil.isIdentifier(nd.type)) {
         gp = nd.name;
     } else if (nd.type === 'Literal') {
         // this case handles array, property field: 0, 1, 2...

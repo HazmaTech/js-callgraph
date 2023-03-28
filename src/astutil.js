@@ -603,6 +603,11 @@ function isFunction(nd) {
         nd.type === 'TSEmptyBodyFunctionExpression'
 }
 
+function isIdentifier(ndType) {
+    return ndType === 'Identifier' ||
+    ndType === 'PrivateIdentifier'
+}
+
 module.exports.visit = visit;
 module.exports.visitWithState = visitWithState;
 module.exports.init = init;
@@ -618,4 +623,5 @@ module.exports.isModuleExports = isModuleExports;
 module.exports.isCallTo = isCallTo;
 module.exports.getReturnValues = getReturnValues;
 module.exports.isFunction = isFunction;
+module.exports.isIdentifier = isIdentifier;
 module.exports.cf = cf;
