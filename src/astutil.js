@@ -91,6 +91,7 @@ function init(root) {
 
         /* Method Definition (Case 1)
 
+        Ref: https://github.com/typescript-eslint/typescript-eslint/blob/v5.37.0/packages/ast-spec/src/base/PropertyDefinitionBase.ts // for typescript
         This case is covered by test case: tests/basics/method-def.truth
 
         Example:
@@ -101,22 +102,23 @@ function init(root) {
                 }
             }
 
-        Esprima AST:
+        AST:
 
             interface Property {
                 type: 'Property';
-                key: Expression;
+                key: Expression | Literal | Identifier;
+                value: AssignmentPattern | ArrayPattern | ObjectPattern | Identifier | Expression | TSEmptyBodyFunctionExpression;
                 computed: boolean;
-                value: Expression | null;
                 kind: 'get' | 'set' | 'init';
                 method: false;
                 shorthand: boolean;
+                optional?: boolean;
             }
         */
         if (nd.type === 'FunctionExpression' && parent && parent.type === 'Property') {
             if (!parent.computed) {
                 if (parent.key.type === 'Identifier') {
-                    nd.id = parent.key;
+                    nd.id = parent.key
                 } else if (parent.key.type === 'Literal') {
                     // create a new `Identifier` AST node and set it to `FunctionExpression`'s id
                     nd.id = {
@@ -124,45 +126,43 @@ function init(root) {
                         name: parent.key.value,
                         range: parent.key.range,
                         loc: parent.key.loc
-                    };
+                    }
                 } else {
                     console.log("WARNING: unexpected key type of 'Property'.");
                 }
-            } else{
-                if(parent.key){
-                    if(parent.key.left &&parent.key.right){
+            } else {
+                if (parent.key) {
+                    if(parent.key.left && parent.key.right) {
                         nd.id = {
                             type: 'Identifier',
                             name: parent.key.left.value + parent.key.right.value,
                             range: parent.key.range,
                             loc: parent.key.loc
-                        };
+                        }
                     }
-                    else if(parent.key.value){
+                    else if (parent.key.value) {
                         nd.id = {
                             type: 'Identifier',
                             name: parent.key.value,
                             range: parent.key.range,
                             loc: parent.key.loc
-                        };
+                        }
                     }
-                    else if(parent.key.name){
+                    else if (parent.key.name) {
                         nd.id = {
                             type: 'Identifier',
                             name: parent.key.name,
                             range: parent.key.range,
                             loc: parent.key.loc
-                        };
+                        }
+                    } else {
+                        console.log("WARNING: Computed property for method definition, not fully supported.");
                     }
-                    else
-                        console.log("WARNING: Computed property for method definition, not yet supported.");
+                }
             }
-        }}
+        }
 
-        if (nd.type === 'FunctionDeclaration' ||
-            nd.type === 'FunctionExpression' ||
-            nd.type === 'ArrowFunctionExpression') {
-
+        if (isFunction(nd)) {
             root.attr.functions.push(nd);
             nd.attr.parent = parent;
             nd.attr.childProp = childProp;
@@ -176,7 +176,9 @@ function init(root) {
         }
 
         /* Method Definition (Case 2)
-        Ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions
+        Ref:
+            https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Method_definitions // for javascript
+            https://github.com/typescript-eslint/typescript-eslint/blob/v5.37.0/packages/ast-spec/src/base/MethodDefinitionBase.ts // for typescript
 
         Example:
 
@@ -186,20 +188,25 @@ function init(root) {
                 }
             }
 
-        Esprima AST:
+        AST:
 
             interface MethodDefinition {
                 type: 'MethodDefinition';
-                key: Expression | null;
+                key: Expression | Literal | Identifier;
+                value: FunctionExpression | TSEmptyBodyFunctionExpression;
                 computed: boolean;
-                value: FunctionExpression | null;
-                kind: 'method' | 'constructor';
                 static: boolean;
+                kind: 'constructor' | 'get' | 'method' | 'set';
+                optional?: boolean;
+                decorators?: Decorator[];
+                accessibility?: Accessibility;
+                typeParameters?: TSTypeParameterDeclaration;
+                override?: boolean;
             }
         */
         if (nd.type === 'MethodDefinition'){
             if (!nd.computed) {
-                if (nd.key.type === 'Identifier') {
+                if (isIdentifier(nd.key.type)) {
                     nd.value.id = nd.key;
                 } else if (nd.key.type === 'Literal') {
                     // this case is covered by test case: tests/unexpected/stringiterator.truth
@@ -208,7 +215,11 @@ function init(root) {
                     console.log("WARNING: unexpected key type of 'MethodDefinition'.");
                 }
             } else {
-                console.log("WARNING: Computed property for method definition, not yet supported.");
+                if (isIdentifier(nd.key.object.type)) {
+                    nd.value.id = nd.key.object
+                } else {
+                    console.log("WARNING: Computed property for method definition, not fully supported.");
+                }
             }
         }
         if (nd.type === 'CallExpression' || nd.type === 'NewExpression')
