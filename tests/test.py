@@ -14,6 +14,7 @@ from process import precision_recall
 test_dirs = ['basics',
              'unexpected',
              'classes',
+             'computed-properties',
              'es6',
              'import-export/define',
              'import-export/es6',
