@@ -118,7 +118,7 @@ function init(root) {
         if (nd.type === 'FunctionExpression' && parent && parent.type === 'Property') {
             if (!parent.computed) {
                 if (parent.key.type === 'Identifier') {
-                    nd.id = parent.key
+                    nd.id = parent.key;
                 } else if (parent.key.type === 'Literal') {
                     // create a new `Identifier` AST node and set it to `FunctionExpression`'s id
                     nd.id = {
@@ -215,10 +215,19 @@ function init(root) {
                     console.log("WARNING: unexpected key type of 'MethodDefinition'.");
                 }
             } else {
-                if (isIdentifier(nd.key.object.type)) {
-                    nd.value.id = nd.key.object
+                if(nd.key.object){
+                    if (isIdentifier(nd.key.object.type)) {
+                        nd.value.id = nd.key.object
+                    } else {
+                        console.log("WARNING: Computed property for method definition, not fully supported.");
+                    }
+                } else if (isIdentifier(nd.key.type)) {
+                    nd.value.id = nd.key;
+                } else if (nd.key.type === 'Literal') {
+                    // this case is covered by test case: tests/unexpected/stringiterator.truth
+                    console.log("WARNING: invalid syntax, method name is of type Literal instead of Identifier.");
                 } else {
-                    console.log("WARNING: Computed property for method definition, not fully supported.");
+                    console.log("WARNING: unexpected key type of 'MethodDefinition'.");
                 }
             }
         }
@@ -610,7 +619,7 @@ Returns:
 function isFunction(nd) {
     return nd.type === 'FunctionDeclaration' ||
         nd.type === 'FunctionExpression' ||
-        nd.type === 'ArrowFunctionExpression'||
+        nd.type === 'ArrowFunctionExpression' ||
         nd.type === 'TSEmptyBodyFunctionExpression'
 }
 

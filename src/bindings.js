@@ -32,13 +32,15 @@ function addBindings(ast) {
                 // FALL THROUGH
                 case 'FunctionExpression':
                 case 'ArrowFunctionExpression':
+                case 'TSEmptyBodyFunctionExpression':
                     const old_decl_scope = decl_scope;
                     scope = decl_scope = new symtab.Symtab(scope);
                     scope.global = false;
 
                     nd.attr.scope = scope;
                     if ((nd.type === 'FunctionExpression' ||
-                        nd.type === 'ArrowFunctionExpression') && nd.id) {
+                        nd.type === 'ArrowFunctionExpression' ||
+                        nd.type ==='TSEmptyBodyFunctionExpression') && nd.id) {
                         decl_scope.set(nd.id.name, nd.id);
                         doVisit(nd.id);
                     }

@@ -90,6 +90,7 @@ function addIntraproceduralFlowGraphEdges(ast, flow_graph) {
                 // R6
                 case 'FunctionExpression':
                 case 'ArrowFunctionExpression':
+                case 'TSEmptyBodyFunctionExpression':
                     flow_graph.addEdge(funcVertex(nd), exprVertex(nd));
                     if (nd.id)
                         flow_graph.addEdge(funcVertex(nd), varVertex(nd.id));
@@ -331,7 +332,6 @@ function funcVertex(fn) {
     if (!astutil.isFunction(fn)) {
         throw new Error("invalid function vertex");
     }
-
     return fn.attr.func_vertex
         || (fn.attr.func_vertex = {
             type: 'FuncVertex',
