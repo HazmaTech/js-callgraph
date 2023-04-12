@@ -1,6 +1,6 @@
 {
   "name": "jscg",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Builds static call graph for JavaScript with a field-based algorithm.",
   "main": "index.js",
   "dependencies": {
